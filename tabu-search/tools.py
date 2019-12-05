@@ -50,3 +50,9 @@ def best_topology(topologies):
 def swap_by_unused(topology, index_to_swap):
 	choosed = randint(0, len(topology.unused_lines))
 	swap(index_to_swap, choosed)
+
+
+def remove_fault_points(topology, fault_points):
+	for point in fault_points:
+		topology[point] = 0 #int(False)
+	return topology

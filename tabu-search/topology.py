@@ -3,9 +3,9 @@ in the vertices. This class hinerits from the Graph
 class, available on https://github.com/italocampos/graphs/blob/python/adjacency_matrix/graph.py
 '''
 
-import os
+import sys
 
-os.sys.path.insert(0, '/home/italo/workspaces/graphs/adjacency_matrix/')
+sys.path.insert(0, '../../graphs/adjacency_matrix/')
 
 from graph import Graph
 
@@ -16,14 +16,14 @@ class Topology(Graph):
 
 
 	def add_edge(self, vertex_a, vertex_b, used = True):
-		super().add_edge(vertex_a, vertex_b)
+		if used:
+			super().add_edge(vertex_a, vertex_b)
 		self._edges.append((vertex_a, vertex_b, used))
 
 
 	def get_edge(self, index):
-		if 0 <= index < len(self._edges):
+		if self._is_valid_index(index):
 			return self._edges[index]
-		raise(Exception('There is no an edge related to the given index.'))
 
 
 	def get_edge_index(self, vertex_a, vertex_b):
@@ -52,9 +52,8 @@ class Topology(Graph):
 
 
 	def set_state_of_edge(self, edge, state):
-		if 0 <= edge < len(self._edges):
+		if self._is_valid_index(edge):
 			self._edges[edge] = state
-		raise(Exception('There is no an edge related to the given index.'))
 
 
 	def get_state_of_edge(self, edge):
@@ -67,7 +66,23 @@ class Topology(Graph):
 			if not edge[2]:
 				unused.append(i)
 		return unused
+	
+
+	def activate_edge(self, index):
+		if self._is_valid_index(index):
+			super().add_edge(self.get_edge(index))
+	
+
+	def deactivate_edge(self, index):
+		if self._is_valid_index(index):
+			self.remove_edge(self.get_edge(index))
 
 
 	def num_of_used_edges(self):
 		return self._edges.count(1)
+
+	
+	def _is_valid_index(index):
+		if 0 <= index < len(self._edges):
+			return True
+		raise(ValueError('There is no an edge related to the given index.'))
