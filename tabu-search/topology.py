@@ -13,12 +13,15 @@ class Topology(Graph):
 	def __init__(self):
 		super().__init__(list(), list())
 		self._edges = list()
+		''' The edges are in the form [a, b, c], where `a` and `b`
+		the vertices of the edge and `c` is a boolean value that
+		indicates whether the edge is used or not '''
 
 
 	def add_edge(self, vertex_a, vertex_b, used = True):
 		if used:
 			super().add_edge(vertex_a, vertex_b)
-		self._edges.append((vertex_a, vertex_b, used))
+		self._edges.append([vertex_a, vertex_b, used])
 
 
 	def get_edge(self, index):
@@ -48,7 +51,7 @@ class Topology(Graph):
 		if len(vector) != len(self._edges):
 			raise(Exception('The given vector has a different size against the number of edges.'))
 		for i, value in enumerate(vector, start=0):
-			self._edges[i] = bool(value)
+			self._edges[i][2] = bool(value)
 
 
 	def set_state_of_edge(self, edge, state):
@@ -58,31 +61,25 @@ class Topology(Graph):
 
 	def get_state_of_edge(self, edge):
 		return self.get_edge(edge)[2]
-
-
-	def unused_edges(self):
-		unused = list()
-		for i, edge in enumerate(self._edges, start=0):
-			if not edge[2]:
-				unused.append(i)
-		return unused
 	
 
 	def activate_edge(self, index):
 		if self._is_valid_index(index):
-			super().add_edge(self.get_edge(index))
+			va, vb, _ = self.get_edge(index)
+			super().add_edge(va, vb)
 	
 
 	def deactivate_edge(self, index):
 		if self._is_valid_index(index):
-			self.remove_edge(self.get_edge(index))
+			va, vb, _ = self.get_edge(index)
+			self.remove_edge(va, vb)
 
 
 	def num_of_used_edges(self):
 		return self._edges.count(1)
 
 	
-	def _is_valid_index(index):
+	def _is_valid_index(self, index):
 		if 0 <= index < len(self._edges):
 			return True
 		raise(ValueError('There is no an edge related to the given index.'))
