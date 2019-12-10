@@ -38,7 +38,8 @@ def run(loops = 10):
 		#fault = [top.get_edge_index('bus2', 'bus3')]
 		#fault = [top.get_edge_index('bus5', 'bus6')]
 		#fault = [top.get_edge_index('bus3', 'bus4'), top.get_edge_index('bus26', 'bus27'), top.get_edge_index('bus9', 'bus10')]
-		fault = [top.get_edge_index('bus18', 'bus19'), top.get_edge_index('bus10', 'bus11')]
+		#fault = [top.get_edge_index('bus18', 'bus19'), top.get_edge_index('bus10', 'bus11')]
+		fault = [top.get_edge_index('bus4', 'bus5'), top.get_edge_index('bus8', 'bus9'), top.get_edge_index('bus20', 'bus21'), top.get_edge_index('bus15', 'bus16')]
 
 		# Applying the fault points
 		set_faults(top, fault)
