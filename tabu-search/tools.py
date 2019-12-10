@@ -37,10 +37,11 @@ def objective_function(topology, root):
 
 
 def best_of(solutions, topology, source):
-	best = solutions.pop(0)
-	topology.set_edge_states(solutions.pop(0))
+	sol = solutions.copy()
+	best = sol.pop(0)
+	topology.set_edge_states(best)
 	value = objective_function(topology, source)
-	for s in solutions:
+	for s in sol:
 		topology.set_edge_states(s)
 		v = objective_function(topology, source)
 		if v > value:
@@ -87,11 +88,13 @@ def set_faults(topology, fault_points):
 	return topology
 
 
+''' Returns the indexes of the bridge lines between the source and
+the first fork '''
 def bridge_lines(topology, root):
 	bridges = list()
 	adjacent = topology.get_adjacent(root)
 	while len(adjacent) == 1:
-		bridges.append((root, adjacent[0]))
+		bridges.append(topology.get_edge_index(root, adjacent[0]))
 		predecessor = root
 		root = adjacent[0]
 		adjacent = list()
@@ -103,7 +106,7 @@ def bridge_lines(topology, root):
 
 def get_lines_probability(topology, source):
 	probabilities = list()
-	heights = topology.breadth_first_search(source)
+	heights, _ = topology.breadth_first_search(source)
 	tree_h = topology.height(source)
 	for i in range(len(topology.get_edge_states())):
 		va, vb, state = topology.get_edge(i)

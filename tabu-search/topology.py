@@ -51,7 +51,10 @@ class Topology(Graph):
 		if len(vector) != len(self._edges):
 			raise(Exception('The given vector has a different size against the number of edges.'))
 		for i, value in enumerate(vector, start=0):
-			self._edges[i][2] = bool(value)
+			if value == 1:
+				self.activate_edge(i)
+			else:
+				self.deactivate_edge(i)
 
 
 	def set_state_of_edge(self, edge, state):
@@ -66,12 +69,14 @@ class Topology(Graph):
 	def activate_edge(self, index):
 		if self._is_valid_index(index):
 			va, vb, _ = self.get_edge(index)
+			self._edges[index][2] = True
 			super().add_edge(va, vb)
 	
 
 	def deactivate_edge(self, index):
 		if self._is_valid_index(index):
 			va, vb, _ = self.get_edge(index)
+			self._edges[index][2] = False
 			self.remove_edge(va, vb)
 
 
