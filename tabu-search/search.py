@@ -139,7 +139,7 @@ def run(loops = 10):
 					make_switch_operations(top.get_edge_states(), net)
 					# Running powerflow
 					try:
-						runpp(net, algorithm='nr', numba=False)
+						runpp(net, algorithm='nr', numba=True)
 					except:
 						print('  ### ERROR: Error during the power flow. Ignoring the solution.')
 						local[i] = [0 for _ in range(len(selected))]
