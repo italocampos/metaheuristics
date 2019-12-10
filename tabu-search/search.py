@@ -32,7 +32,7 @@ def run(loops = 10):
 		top = create_topology(net)
 
 		# The tabu-list
-		tabu = TabuList(length = int(0.2 * len(net.line))) #int(20% of the number of lines)
+		tabu = TabuList(max_length = int(0.2 * len(net.line))) #int(20% of the number of lines)
 
 		# Defining the fault points
 		#fault = [top.get_edge_index('bus2', 'bus3')]
