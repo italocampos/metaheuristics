@@ -35,7 +35,7 @@ pop_size = 50
 #last_i = iteration
 
 # Defines the maximum iteration
-max_i = 300
+max_i = 200
 
 # The maximum iteration without improve the found solution
 max_ii = 100
@@ -52,17 +52,8 @@ m_rate_limit = 10
 
 # Defining common functions
 
-
-# Clears the lists with the problem instance
-def clear():
-	weights = list()
-	values = list()
-	factors = list()
-
-
 # Reads the file with intance data
 def read(file_name = 'items.in'):
-	clear()
 	file = open(file_name)
 	for line in file:
 		value, weight = line.split()
@@ -73,8 +64,8 @@ def read(file_name = 'items.in'):
 		factors.append(value/weight)
 
 
-read('items_1000.in')
-#read()
+#read('items_1000.in')
+read()
 
 # The masks used into crossover
 # Generates a crossing mask based on factors vector
@@ -167,13 +158,13 @@ def fix(solution):
 	for i, e in enumerate(solution):
 		if e == 1:
 			items.append(i)
-	while objective_function(solution) > max_weight:
+	while check_weight(solution) > max_weight:
 		solution[items.pop(randint(0, len(items) - 1))] = 0
 
 
 # Checks if a solution is feasible. Case no, fixes it
 def validate(solution):
-	if objective_function(solution) > max_weight:
+	if check_weight(solution) > max_weight:
 		fix(solution)
 	return solution
 
@@ -209,7 +200,6 @@ def mutation(solution, rate):
 	for i in range(len(solution)):
 		if random() < rate:
 			solution[i] = int(not bool(solution[i]))
-
 
 
 def run(times = 1):
@@ -288,7 +278,7 @@ def run(times = 1):
 			
 
 			# TERMINATION CRITERIA -------------------
-			if iteration - last_i >= max_ii or iteration >= max_i or objective_function(best) == max_weight:
+			if iteration - last_i >= max_ii or iteration >= max_i: #or objective_function(best) == max_weight:
 				stop = True
 			# ----------------------------------------
 
