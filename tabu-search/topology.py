@@ -3,10 +3,6 @@ in the vertices. This class hinerits from the Graph
 class, available on https://github.com/italocampos/graphs/blob/python/adjacency_matrix/graph.py
 '''
 
-import sys
-
-sys.path.insert(0, '../../graphs/adjacency_matrix/')
-
 from graph import Graph
 
 class Topology(Graph):

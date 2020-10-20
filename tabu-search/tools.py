@@ -3,6 +3,12 @@ of the TS'''
 
 from topology import Topology
 from random import randint, random
+import copy
+
+# Defining contants for the functions
+
+# The value for the max probability for the probability vector
+MAX_PROB = 0.7
 
 
 def create_topology(pp_net):
@@ -37,16 +43,20 @@ def objective_function(topology, root):
 
 
 def best_of(solutions, topology, source):
-	sol = solutions.copy()
-	best = sol.pop(0)
-	topology.set_edge_states(best)
-	value = objective_function(topology, source)
-	for s in sol:
-		topology.set_edge_states(s)
-		v = objective_function(topology, source)
-		if v > value:
-			best = s
-			value = v
+	if solutions != []:
+		sol = solutions.copy()
+		best = sol.pop(0)
+		top = copy.deepcopy(topology)
+		top.set_edge_states(best)
+		value = objective_function(top, source)
+		for s in sol:
+			top.set_edge_states(s)
+			v = objective_function(top, source)
+			if v > value:
+				best = s
+				value = v
+	else:
+		raise(Exception('The solutions list is empty.'))
 	return best
 	
 
@@ -112,10 +122,10 @@ def get_lines_probability(topology, source):
 		va, vb, state = topology.get_edge(i)
 		ha = heights[topology.get_vertex_index(va)][1]
 		hb = heights[topology.get_vertex_index(vb)][1]
-		p = 0.7 if max(ha, hb)/tree_h > 0.7 else max(ha, hb)/tree_h
+		p = MAX_PROB if max(ha, hb)/tree_h > MAX_PROB else max(ha, hb)/tree_h
 		probabilities.append(p)
 	return probabilities
 
 
 def draw(probability = 0.5):
-	return random() <= probability
+	return random() < probability
