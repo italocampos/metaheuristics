@@ -84,3 +84,79 @@ class Topology(Graph):
 		if 0 <= index < len(self._edges):
 			return True
 		raise(ValueError('There is no an edge related to the given index.'))
+
+
+
+class MultiSourcedTopology(Topology):
+	''' This class is a derivation of Topology class in order to support multi-
+	sourced models in the Tabu Search.
+
+	This class is meant to link the multiple sources with abstract lines and
+	choose only one among them to be a Topology 'source'. This mechanism makes
+	possible the topology perform the Tabu Search without change too many code.
+
+	Properties
+	----------
+	abstract_edges : list
+		A list with the index of the abstract lines. See the stringdoc of the
+		method 'add_abstract_edge()' to more info.
+	'''
+
+	def __init__(self):
+		super().__init__()
+		self.abstract_edges = list()
+	
+
+	def add_abstract_edge(self, vertex_a, vertex_b):
+		''' Adds an abstract edge to the topology.
+
+		An abstract edge is an edge that only exists in the topology, not in
+		the original network model. These edges are used to link multiple
+		sources of the model in only one vertex and perform the graph
+		operations as the model had a single source. The abstract lines MUST
+		be instantiated after all the normal edges of the topology.
+
+		Parameters
+		----------
+		vertex_a : str
+			The name of one of the vertices of the edge.
+		vertex_b : str
+			The name of the other vertex of the edge.
+		'''
+
+		self.add_edge(vertex_a, vertex_b, used = True)
+		self.abstract_edges.append(self.get_edge_index(vertex_a, vertex_b))
+	
+	
+	def get_edge_states(self):
+		''' Return the states of the edges in [1, 0, 1,...] form, excluding the
+		abstract edges.
+
+		Returns
+		-------
+		list
+			The binary vector with the state of the edges exclugind the
+			positions of the abstract edges.
+		'''
+
+		edges = super().get_edge_states()
+		states = list()
+		for i in range(len(edges)):
+			if not i in self.abstract_edges:
+				states.append(edges[i])
+		return states
+	
+
+	def set_edge_states(self, vector):
+		''' Put the states of the switches described in the provided vector in
+		each edge of the topology, except in the abstract lines, which are ever
+		actives.
+
+		Parameters
+		----------
+		vector : list
+			The vector of binaries indicating the states of the edges in the
+			topology.
+		'''
+
+		super().set_edge_states(vector + [1 for _ in self.abstract_edges])

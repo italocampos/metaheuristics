@@ -1,10 +1,9 @@
 ''' This file implements the Tabu Search to the modeled problem. '''
 
 from tl import TabuList
-from smash.networks import network33bus
 from random import random
 from time import time
-import tools, color, pandapower as pp
+import tools, color, pandapower as pp, models
 
 
 def run(loops = 10):
@@ -13,7 +12,7 @@ def run(loops = 10):
 		
 	for step in range(loops):
 
-		print(color.yellow('\n\nLOOP #%d ---------------------------------------------' % step + 1, 'bold'))
+		print(color.yellow('\n\nLOOP #%d ---------------------------------------------' % (step + 1), 'bold'))
 
 		# Extra variables
 		elapsed_time = 0
@@ -21,27 +20,50 @@ def run(loops = 10):
 
 		# DEFINING GLOBAL VARIABLES AND PARAMETERS --------------
 
-		# The variable that controls the loop
-		stop = False
-
+		# For single-sourced models, use the lines of code below:
+		# -------------------------------------------------------
 		# Getting the test model
-		net = network33bus()
+		net = models.network33bus()
+
+		# Getting the power source name (it works only for one-sourced nets)
+		source = net.bus['name'][int(net.ext_grid['bus'])]
 
 		# Getting the initial topology
 		top = tools.create_topology(net)
+		# Getting the indexes of the bridge lines between the source (bus0) and
+		# the first fork
+		bridges = tools.bridge_lines(top, source)
+
+		# For multiple-sourced models, use the lines of code below:
+		# ---------------------------------------------------------
+		net = models.network16bus()
+
+		# Defines the power source name
+		source = 'bus1'
+
+		# Creating a multi-sourced topology
+		top = tools.create_multisourced_topology(net)
+
+		# Adding the abstract edges to the topology
+		top.add_abstract_edge('bus0', 'bus1')
+		top.add_abstract_edge('bus1', 'bus2')
+
+		# Defining manually the bridge lines according to the model
+		bridges = [0, 4, 9]
+		# ---------------------------------------------------------
+
+		# The variable that controls the loop
+		stop = False
 
 		# Creating the tabu-list
 		tabu = TabuList(max_length = int(0.2 * len(net.line))) #int(20% of the number of lines)
-
-		# Getting the power source name (it works only for one-sourced nets)
-		#source = net.bus['name'][int(net.ext_grid['bus'])]
-		source = 'bus0'
 
 		# Getting the probability vector for the initial state of the net
 		prob_vector = tools.get_lines_probability(top, source)
 
 		# Defining the fault points
-		fault = [top.get_edge_index('bus2', 'bus3')]
+		fault = [4]
+		#fault = [top.get_edge_index('bus2', 'bus3')]
 		#fault = [top.get_edge_index('bus5', 'bus6')]
 		#fault = [top.get_edge_index('bus3', 'bus4'), top.get_edge_index('bus26', 'bus27'), top.get_edge_index('bus9', 'bus10')]
 		#fault = [top.get_edge_index('bus18', 'bus19'), top.get_edge_index('bus10', 'bus11')]
@@ -51,7 +73,8 @@ def run(loops = 10):
 		tools.set_faults(top, fault)
 
 		# Limit for voltage variation
-		v_variation = 0.18
+		#v_variation = 0.18
+		v_variation = 0.05
 
 		# Limit for current variation
 		i_variation = 0.05
@@ -87,10 +110,6 @@ def run(loops = 10):
 
 		# Maximum iterations to local search
 		max_local = 10
-
-		# Getting the indexes of the bridge lines between the source (bus0) and
-		# the first fork
-		bridges = tools.bridge_lines(top, source)
 		# -------------------------------------------------------
 
 		# MAIN LOOP ---------------------------------------------
@@ -131,18 +150,19 @@ def run(loops = 10):
 				local_search = [sol] + [tools.swap_1_0(sol.copy()) for _ in range(max_local)]
 				
 				# Activating the bridge lines and removing fault points
-				for solution in local_search:
-					solution = tools.set_value(solution, bridges, 1)
-					solution = tools.set_value(solution, fault, 0)
+				for i in range(len(local_search)):
+					local_search[i] = tools.set_value(local_search[i], bridges, 1)
+					local_search[i] = tools.set_value(local_search[i], fault, 0)
 				
 				#print('  Removing cycles...')
 				# Removing cycles
-				for solution in local_search:
-					top.set_edge_states(solution)
+				for i in range(len(local_search)):
+					top.set_edge_states(local_search[i])
 					for cycle in top.cycles(source, search = 'bfs'):
+						print(color.magenta('    The topology has cycles. Fixing it...'))
 						top.deactivate_edge(top.get_edge_index(cycle[0], cycle[1]))
-					# Update the solution removing its cycles
-					solution = top.get_edge_states()
+						# Update the solution removing its cycles
+						local_search[i] = top.get_edge_states()
 				
 				#print('  Running the power flow...')
 				valid_solutions = list()
